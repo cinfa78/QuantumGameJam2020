@@ -19,6 +19,7 @@ public class Node : MonoBehaviour, IPointerClickHandler {
     }
 
     [ColorUsage(true, true)] public Color color;
+    [ColorUsage(true, true)] public Color arcColor;
     public Node[] exitNodes;
     public Arc[] exitArcs;
     [FormerlySerializedAs("meshRenderer")] [FormerlySerializedAs("spriteRenderer")]
@@ -30,6 +31,7 @@ public class Node : MonoBehaviour, IPointerClickHandler {
     public GameObject linePrefab;
     //private SpriteShapeController[] exitingLines;
     public bool endNode;
+    public float showTime = 0.1f;
     [ReadOnly, SerializeField] private bool canBeSelected;
     public bool CanBeSelected {
         get => canBeSelected;
@@ -58,7 +60,7 @@ public class Node : MonoBehaviour, IPointerClickHandler {
     private void Awake() {
         nodeOutline.material = Instantiate(nodeOutline.material);
         nodeOutline.material.color = color;
-        nodeOutline.material.SetColor("_Color", color);
+        nodeOutline.material.SetColor("_Color", new Color(2,2,2,1));
         nodeFilled.material = Instantiate(nodeFilled.material);
         nodeFilled.enabled = false;
         nodeGlow.enabled = false;
@@ -75,6 +77,7 @@ public class Node : MonoBehaviour, IPointerClickHandler {
             newSpriteShape.transform.position = transform.position + Vector3.forward;
             SpriteShapeController spriteShape = newSpriteShape.GetComponent<SpriteShapeController>();
             newSpriteShape.GetComponent<SpriteShapeRenderer>().materials[1] = Instantiate(newSpriteShape.GetComponent<SpriteShapeRenderer>().materials[1]);
+            newSpriteShape.GetComponent<SpriteShapeRenderer>().materials[1].color = arcColor;
             spriteShape.spline.SetPosition(1, exitNode.transform.position - transform.position + Vector3.forward);
             exitArcs[i] = new Arc {source = this, target = exitNode, spriteShapeController = spriteShape};
             //exitingLines[i] = newSpriteShape.GetComponent<SpriteShapeController>();
@@ -88,13 +91,13 @@ public class Node : MonoBehaviour, IPointerClickHandler {
         }
         label.enabled = false;
     }
-
-    public void ToggleValue() {
-        label.enabled = !label.enabled;
-        if (label.enabled) {
-            label.text = value > 0 ? $"{value}" : "";
-        }
-    }
+    //
+    // public void ToggleValue() {
+    //     label.enabled = !label.enabled;
+    //     if (label.enabled) {
+    //         label.text = value > 0 ? $"{value}" : "";
+    //     }
+    // }
 
     public void SetColor(Color color) {
         nodeFilled.material.color = color;
@@ -122,7 +125,7 @@ public class Node : MonoBehaviour, IPointerClickHandler {
             spriteShapeController.spline.SetPosition(1, Vector3.forward * 4);
         }
         float timer = 0;
-        const float duration = 1f;
+        float duration = showTime;
         while (timer < duration) {
             float t = timer / duration;
             i = 0;
@@ -138,9 +141,7 @@ public class Node : MonoBehaviour, IPointerClickHandler {
             arc.spriteShapeController.spline.SetPosition(1, (arc.target.transform.position - arc.source.transform.position) + Vector3.forward);
             i++;
         }
-        if (!endNode) {
-            ToggleValue();
-        }
+        label.enabled = !endNode;
         Showed?.Invoke(this);
         foreach (var node in exitNodes) {
             node.ShowNode(show);
@@ -165,7 +166,7 @@ public class Node : MonoBehaviour, IPointerClickHandler {
         }
     }
 
-    public void ColorExitLine(Node target,Color newColor) {
+    public void ColorExitLine(Node target, Color newColor) {
         foreach (var arc in exitArcs) {
             if (arc.target == target) {
                 arc.spriteShapeController.GetComponent<SpriteShapeRenderer>().materials[1].color = newColor;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using TMPro;
 //using Unity.Collections;
@@ -18,6 +19,8 @@ public class GameManager : MonoBehaviour {
     }
 
     public AudioClip[] notes;
+    [ColorUsage(true, true)] public Color startNodeColor;
+    [ColorUsage(true, true)] public Color endNodeColor;
     [ColorUsage(true, true)] public Color playerColor;
     [ColorUsage(true, true)] public Color aiColor;
     [ReadOnly] public State state;
@@ -25,6 +28,9 @@ public class GameManager : MonoBehaviour {
     public CanvasGroup startBackground;
     public CanvasGroup endBackground;
     public GameObject scoreContainer;
+    public GameObject interfaceContainer;
+    public GameObject nodesContainer;
+    public GameObject instructionsContainer;
     public TMP_Text scoreLabel;
     public TMP_Text targetScoreLabel;
     public TMP_Text resultLabel;
@@ -69,6 +75,7 @@ public class GameManager : MonoBehaviour {
         audioSource.loop = false;
         audioSource.playOnAwake = false;
         notesSequence = new List<int>();
+        interfaceContainer.SetActive(false);
     }
 
     private void Start() {
@@ -89,37 +96,52 @@ public class GameManager : MonoBehaviour {
         leafMeshRenderer.material = Instantiate(leafMeshRenderer.material);
         leafMeshRenderer.material.SetFloat("_Fade", 0);
         Faded += StartGame;
-        scoreContainer.SetActive(false);
+        scoreContainer.GetComponent<CanvasGroup>().alpha = 0;
         FadeToGame();
     }
 
     private void OnEndNodeShowed(Node obj) {
         state = State.FirstMove;
-        scoreContainer.SetActive(true);
+        playerCurrentNode = rootNode;
+        playerPath.Add(rootNode);
+        foreach (var exitNode in playerCurrentNode.exitNodes) {
+            exitNode.CanBeSelected = true;
+        }
+        interfaceContainer.SetActive(true);
         UpdateResult();
     }
 
     private void StartGame() {
         Faded -= StartGame;
         rootNode.ShowNode(true);
-        playerCurrentNode = rootNode;
-        playerPath.Add(rootNode);
-        foreach (var exitNode in playerCurrentNode.exitNodes) {
-            exitNode.CanBeSelected = true;
-        }
-        rootNode.SetColor(Color.yellow);
+
+        rootNode.SetColor(startNodeColor);
         rootNode.nodeFilled.enabled = true;
-        endNode.SetColor(Color.gray);
+        endNode.SetColor(endNodeColor);
         endNode.nodeFilled.enabled = true;
     }
 
-    public void FadeToGame() {
+    private void FadeToGame() {
         StartCoroutine(FadingBackground(startBackground, inGameBackground));
     }
 
-    public void FadeToEnd() {
+    private void FadeToEnd() {
+        nodesContainer.SetActive(false);
+        Faded += OnEndFading;
         StartCoroutine(FadingBackground(inGameBackground, endBackground));
         StartCoroutine(ColoringLeaf());
+        StartCoroutine(ReplayNotes());
+    }
+
+    private IEnumerator ReplayNotes() {
+        for (int i = 0; i < notesSequence.Count; i++) {
+            audioSource.PlayOneShot(notes[notesSequence[i]]);
+            yield return new WaitForSeconds(0.2f);
+        }
+    }
+
+    private void OnEndFading() {
+        nodesContainer.SetActive(true);
     }
 
     private IEnumerator ColoringLeaf() {
@@ -166,12 +188,13 @@ public class GameManager : MonoBehaviour {
                 Node chosen = choices[Random.Range(0, choices.Length)];
                 //chosen.SetColor(aiColor);
                 aiPath.Add(chosen);
-                Debug.Log($"Adding {chosen} to AI path");
+                //Debug.Log($"Adding {chosen} to AI path");
                 targetScore += chosen.value;
                 UpdateResult();
                 targetScoreLabel.text = $"{targetScore}";
                 if (currentNode != rootNode && currentNode != endNode) {
                     currentNode.SetColor(aiColor);
+                    currentNode.label.color = Color.white;
                 }
                 chosen.nodeFilled.enabled = true;
                 currentNode.ColorExitLine(chosen, aiColor);
@@ -195,6 +218,7 @@ public class GameManager : MonoBehaviour {
         }
         playerCurrentNode.ColorExitLine(pickedNode, playerColor);
         pickedNode.SelectedByPlayer = true;
+        pickedNode.label.color = Color.black;
         foreach (var exitNode in playerCurrentNode.exitNodes) {
             exitNode.CanBeSelected = false;
         }
@@ -204,7 +228,9 @@ public class GameManager : MonoBehaviour {
         }
         if (playerCurrentNode == endNode) {
             state = State.End;
+            FadeToEnd();
         }
+        turn++;
     }
 
     private void PlayRandomNote() {
@@ -224,9 +250,13 @@ public class GameManager : MonoBehaviour {
             case State.FirstMove:
                 PickNode(pickedNode);
                 CalculateAiPath();
+                scoreContainer.GetComponent<CanvasGroup>().DOFade(1, 1f);
                 break;
             case State.GamePlay:
                 PickNode(pickedNode);
+                if (turn == 3) {
+                    instructionsContainer.GetComponent<CanvasGroup>().DOFade(0, 1f);
+                }
                 break;
             case State.End:
                 break;
@@ -236,8 +266,8 @@ public class GameManager : MonoBehaviour {
     }
 
     private void UpdateResult() {
-        int result = Mathf.Abs(5 - ((targetScore - score) % scoreMod));
-        resultLabel.text = $"{5 - result}";
+        int result = Mathf.Abs(5 - (Mathf.Abs(targetScore - score) % scoreMod));
+        resultLabel.text = $"{result}";
         resultImage.fillAmount = result / 5f;
     }
 

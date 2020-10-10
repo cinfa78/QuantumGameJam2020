@@ -2,7 +2,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 
 public class GameLoader : MonoBehaviour {
     public AudioClip menuBackgroundMusic;
@@ -13,6 +12,9 @@ public class GameLoader : MonoBehaviour {
     private AudioSource[] audioSources;
     public static GameLoader Instance;
     private bool isLoading;
+    public event Action MenuShowed;
+    public event Action MenuLoaded;
+    public event Action GameLoading;
 
     private void Awake() {
         audioSources = GetComponents<AudioSource>();
@@ -28,6 +30,7 @@ public class GameLoader : MonoBehaviour {
         }
         DontDestroyOnLoad(gameObject);
         faderGroup.alpha = 1;
+        MenuLoaded += OnMenuLoaded;
     }
 
     private IEnumerator ShowingMenu() {
@@ -44,10 +47,15 @@ public class GameLoader : MonoBehaviour {
         audioSources[0].volume = 1;
         faderGroup.alpha = 0;
         isLoading = false;
+        MenuShowed?.Invoke();
+    }
+
+    private void OnMenuLoaded() {
+        StartCoroutine(ShowingMenu());
     }
 
     private void Start() {
-        StartCoroutine(ShowingMenu());
+        OnMenuLoaded();
     }
 
     private void Update() {
@@ -60,6 +68,7 @@ public class GameLoader : MonoBehaviour {
         // audioSources[0].Play();
         // audioSources[1].Play();
         if (!isLoading) {
+            GameLoading?.Invoke();
             StartCoroutine(Loading("Game"));
         }
     }
@@ -106,5 +115,7 @@ public class GameLoader : MonoBehaviour {
         audioSources[0].Stop();
         faderGroup.alpha = 0;
         isLoading = false;
+        if (!loadingGame)
+            MenuLoaded?.Invoke();
     }
 }
