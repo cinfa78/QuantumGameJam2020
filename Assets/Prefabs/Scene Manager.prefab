@@ -348,7 +348,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   menuBackgroundMusic: {fileID: 8300000, guid: 8bd2a12d479910c47946e59b8aee6a5b, type: 3}
-  gameBackgroundMusic: {fileID: 0}
+  menuVolume: 0.8
+  gameBackgroundMusic: {fileID: 8300000, guid: d08096aacf6e0cd48900a3a305d264a3, type: 3}
+  gameVolume: 0.6
   faderGroup: {fileID: 2077631968}
 --- !u!82 &1595083379
 AudioSource:
@@ -362,7 +364,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 8bd2a12d479910c47946e59b8aee6a5b, type: 3}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.7
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -458,7 +460,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.7
   m_Pitch: 1
   Loop: 1
   Mute: 0

@@ -11,8 +11,16 @@ using UnityEngine.U2D;
 public class Node : MonoBehaviour, IPointerClickHandler {
     public int value;
 
+    [Serializable]
+    public struct Arc {
+        public Node source;
+        public Node target;
+        public SpriteShapeController spriteShapeController;
+    }
+
     [ColorUsage(true, true)] public Color color;
     public Node[] exitNodes;
+    public Arc[] exitArcs;
     [FormerlySerializedAs("meshRenderer")] [FormerlySerializedAs("spriteRenderer")]
     public MeshRenderer nodeOutline;
     public MeshRenderer nodeFilled;
@@ -20,12 +28,9 @@ public class Node : MonoBehaviour, IPointerClickHandler {
     [FormerlySerializedAs("text")] public TMP_Text label;
     public GameObject graphics;
     public GameObject linePrefab;
-    private SpriteShapeController[] exitingLines;
+    //private SpriteShapeController[] exitingLines;
     public bool endNode;
-    [ReadOnly] private bool canBeSelected;
-    public event Action<Node> Selected;
-    public event Action<Node> Showed;
-    
+    [ReadOnly, SerializeField] private bool canBeSelected;
     public bool CanBeSelected {
         get => canBeSelected;
         set {
@@ -38,16 +43,17 @@ public class Node : MonoBehaviour, IPointerClickHandler {
             }
         }
     }
-    private bool selectedByPlayer;
+    [ReadOnly, SerializeField] private bool selectedByPlayer;
     public bool SelectedByPlayer {
         get => selectedByPlayer;
         set {
             selectedByPlayer = value;
-            if (selectedByPlayer) {
-                ToggleFilled();
-            }
+            nodeFilled.enabled = selectedByPlayer;
         }
     }
+
+    public event Action<Node> Selected;
+    public event Action<Node> Showed;
 
     private void Awake() {
         nodeOutline.material = Instantiate(nodeOutline.material);
@@ -61,18 +67,22 @@ public class Node : MonoBehaviour, IPointerClickHandler {
     }
 
     private void Start() {
-        exitingLines = new SpriteShapeController[exitNodes.Length];
+        exitArcs = new Arc[exitNodes.Length];
+        //exitingLines = new SpriteShapeController[exitNodes.Length];
         int i = 0;
         foreach (var exitNode in exitNodes) {
-            var newSpriteShape = Instantiate(linePrefab, graphics.transform);
+            var newSpriteShape = Instantiate(linePrefab, transform);
             newSpriteShape.transform.position = transform.position + Vector3.forward;
             SpriteShapeController spriteShape = newSpriteShape.GetComponent<SpriteShapeController>();
-            spriteShape.spline.SetPosition(1, exitNode.transform.position - graphics.transform.position + Vector3.forward);
-            exitingLines[i] = newSpriteShape.GetComponent<SpriteShapeController>();
+            newSpriteShape.GetComponent<SpriteShapeRenderer>().materials[1] = Instantiate(newSpriteShape.GetComponent<SpriteShapeRenderer>().materials[1]);
+            spriteShape.spline.SetPosition(1, exitNode.transform.position - transform.position + Vector3.forward);
+            exitArcs[i] = new Arc {source = this, target = exitNode, spriteShapeController = spriteShape};
+            //exitingLines[i] = newSpriteShape.GetComponent<SpriteShapeController>();
             i++;
         }
         graphics.SetActive(false);
-        foreach (SpriteShapeController spriteShapeController in exitingLines) {
+        foreach (var arc in exitArcs) {
+            var spriteShapeController = arc.spriteShapeController;
             spriteShapeController.enabled = false;
             spriteShapeController.spline.SetPosition(1, Vector3.forward * 4);
         }
@@ -106,7 +116,8 @@ public class Node : MonoBehaviour, IPointerClickHandler {
         int i = 0;
 
         graphics.SetActive(show);
-        foreach (SpriteShapeController spriteShapeController in exitingLines) {
+        foreach (Arc arc in exitArcs) {
+            var spriteShapeController = arc.spriteShapeController;
             spriteShapeController.enabled = show;
             spriteShapeController.spline.SetPosition(1, Vector3.forward * 4);
         }
@@ -115,16 +126,16 @@ public class Node : MonoBehaviour, IPointerClickHandler {
         while (timer < duration) {
             float t = timer / duration;
             i = 0;
-            foreach (var exitNode in exitNodes) {
-                exitingLines[i].spline.SetPosition(1, Vector3.Lerp(Vector3.forward * 4, exitNode.transform.position - graphics.transform.position + Vector3.forward, t));
+            foreach (var arc in exitArcs) {
+                arc.spriteShapeController.spline.SetPosition(1, Vector3.Lerp(Vector3.forward * 4, (arc.target.transform.position - arc.source.transform.position) + Vector3.forward, t));
                 i++;
             }
             timer += Time.deltaTime;
             yield return null;
         }
         i = 0;
-        foreach (var exitNode in exitNodes) {
-            exitingLines[i].spline.SetPosition(1, exitNode.transform.position - graphics.transform.position + Vector3.forward);
+        foreach (var arc in exitArcs) {
+            arc.spriteShapeController.spline.SetPosition(1, (arc.target.transform.position - arc.source.transform.position) + Vector3.forward);
             i++;
         }
         if (!endNode) {
@@ -142,14 +153,24 @@ public class Node : MonoBehaviour, IPointerClickHandler {
             Gizmos.color = Color.red;
             Gizmos.DrawLine(transform.position, exitNode.transform.position);
         }
-        label.text = $"{value}";
+        label.text = value > 0 ? $"{value}" : "";
     }
 #endif
 
     public void OnPointerClick(PointerEventData eventData) {
         if (CanBeSelected) {
-            Selected?.Invoke(this);
+            CanBeSelected = false;
             SelectedByPlayer = true;
+            Selected?.Invoke(this);
+        }
+    }
+
+    public void ColorExitLine(Node target,Color newColor) {
+        foreach (var arc in exitArcs) {
+            if (arc.target == target) {
+                arc.spriteShapeController.GetComponent<SpriteShapeRenderer>().materials[1].color = newColor;
+                break;
+            }
         }
     }
 }

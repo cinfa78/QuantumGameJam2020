@@ -5,10 +5,10 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 
 public class GameLoader : MonoBehaviour {
-    [FormerlySerializedAs("backgroundMusic")]
     public AudioClip menuBackgroundMusic;
-    [FormerlySerializedAs("backgroundMusic")]
+    [Range(0, 1f)] public float menuVolume;
     public AudioClip gameBackgroundMusic;
+    [Range(0, 1f)] public float gameVolume;
     public CanvasGroup faderGroup;
     private AudioSource[] audioSources;
     public static GameLoader Instance;
@@ -37,7 +37,7 @@ public class GameLoader : MonoBehaviour {
         float firstFadeDuration = 2;
         while (timer < firstFadeDuration) {
             faderGroup.alpha = Mathf.Lerp(1, 0f, timer / firstFadeDuration);
-            audioSources[0].volume = Mathf.Lerp(0.5f, 1f, timer / firstFadeDuration);
+            audioSources[0].volume = Mathf.Lerp(0.5f, menuVolume, timer / firstFadeDuration);
             timer += Time.deltaTime;
             yield return null;
         }
@@ -48,6 +48,12 @@ public class GameLoader : MonoBehaviour {
 
     private void Start() {
         StartCoroutine(ShowingMenu());
+    }
+
+    private void Update() {
+        if (Input.GetKeyDown(KeyCode.Escape)) {
+            Application.Quit();
+        }
     }
 
     public void LoadGameScene() {
@@ -79,26 +85,24 @@ public class GameLoader : MonoBehaviour {
             yield return null;
         }
         audioSources[1].Play();
-        const float startVolume = 0;
-        const float endVolume = 1;
         timer = 0;
         const float duration = 2;
         while (timer < duration) {
             float t = timer / duration;
             if (loadingGame) {
-                audioSources[0].volume = Mathf.Lerp(endVolume, startVolume, t);
-                audioSources[1].volume = Mathf.Lerp(startVolume, endVolume, t);
+                audioSources[0].volume = Mathf.Lerp(menuVolume, 0, t);
+                audioSources[1].volume = Mathf.Lerp(0, gameVolume, t);
             }
             else {
-                audioSources[1].volume = Mathf.Lerp(endVolume, startVolume, t);
-                audioSources[0].volume = Mathf.Lerp(startVolume, endVolume, t);
+                audioSources[1].volume = Mathf.Lerp(gameVolume, 0, t);
+                audioSources[0].volume = Mathf.Lerp(0, menuVolume, t);
             }
             faderGroup.alpha = Mathf.Lerp(1, 0f, t);
             timer += Time.deltaTime;
             yield return null;
         }
-        audioSources[0].volume = loadingGame ? 0 : 1;
-        audioSources[1].volume = loadingGame ? 1 : 0;
+        audioSources[0].volume = loadingGame ? 0 : menuVolume;
+        audioSources[1].volume = loadingGame ? gameVolume : 0;
         audioSources[0].Stop();
         faderGroup.alpha = 0;
         isLoading = false;

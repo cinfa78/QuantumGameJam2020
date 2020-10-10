@@ -136,9 +136,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdd3f62e9a3caca4ebc3b8cb22822df7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  value: 23
-  color: {r: 10.680627, g: 0, b: 10.680627, a: 1}
+  value: 9
+  color: {r: 14.259475, g: 0, b: 14.259475, a: 1}
   exitNodes: []
+  exitArcs: []
   nodeOutline: {fileID: 191224281783354414}
   nodeFilled: {fileID: 191224281396420527}
   nodeGlow: {fileID: 191224281753028568}
@@ -372,7 +373,7 @@ Transform:
   m_GameObject: {fileID: 191224283102361653}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.67586, y: 0.67586, z: 0.67586}
   m_Children:
   - {fileID: 191224281783354412}
   - {fileID: 191224281396420560}
@@ -440,15 +441,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 23
+  m_text: 9
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 81a25c62487276d4a8027bd2f0f0e353, type: 2}
-  m_sharedMaterial: {fileID: -308880790843671780, guid: 81a25c62487276d4a8027bd2f0f0e353,
+  m_fontAsset: {fileID: 11400000, guid: 2efe1769c97f604409a8ee584cc672df, type: 2}
+  m_sharedMaterial: {fileID: 3030541044988920900, guid: 2efe1769c97f604409a8ee584cc672df,
     type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -478,7 +479,7 @@ MonoBehaviour:
   m_fontWeight: 400
   m_enableAutoSizing: 1
   m_fontSizeMin: 0
-  m_fontSizeMax: 10
+  m_fontSizeMax: 1.5
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -541,7 +542,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8565060986152255157}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 2559465246212963293}
@@ -572,7 +573,7 @@ Canvas:
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4
   m_TargetDisplay: 0
 --- !u!210 &3252046199394078988
 SortingGroup:
@@ -584,4 +585,4 @@ SortingGroup:
   m_Enabled: 1
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 3
+  m_SortingOrder: 4

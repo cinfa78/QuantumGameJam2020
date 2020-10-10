@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using TMPro;
 //using Unity.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour {
@@ -15,24 +17,42 @@ public class GameManager : MonoBehaviour {
         End = 3
     }
 
-    [ColorUsage(false, true)] public Color playerColor;
-    [ColorUsage(false, true)] public Color aiColor;
+    public AudioClip[] notes;
+    [ColorUsage(true, true)] public Color playerColor;
+    [ColorUsage(true, true)] public Color aiColor;
     [ReadOnly] public State state;
     public CanvasGroup inGameBackground;
     public CanvasGroup startBackground;
     public CanvasGroup endBackground;
+    public GameObject scoreContainer;
+    public TMP_Text scoreLabel;
+    public TMP_Text targetScoreLabel;
+    public TMP_Text resultLabel;
+    public Image resultImage;
     public float fadeTime = 2;
 
     public MeshRenderer leafMeshRenderer;
     public Node rootNode;
     private Node endNode;
     private Node[] nodes;
-    [ReadOnly] private int turn;
-    [ReadOnly] public int score;
+    [ReadOnly, SerializeField] private int turn;
+    public int scoreMod;
+    [ReadOnly, SerializeField] private int score;
+    public int Score {
+        get => score;
+        set {
+            score = value;
+            scoreLabel.text = $"{score}";
+        }
+    }
     [ReadOnly] public int targetScore;
     [SerializeField, ReadOnly] private List<Node> aiPath;
     [SerializeField, ReadOnly] private List<Node> playerPath;
     [SerializeField, ReadOnly] private Node playerCurrentNode;
+    private AudioSource audioSource;
+    private List<int> notesSequence;
+
+    private int lastPickedNote = -1;
 
     public event Action Faded;
 
@@ -43,12 +63,21 @@ public class GameManager : MonoBehaviour {
         endBackground.alpha = 0;
         state = State.Intro;
         aiPath = new List<Node>();
+        targetScoreLabel.text = "0";
+        scoreLabel.text = "0";
+        audioSource = GetComponent<AudioSource>();
+        audioSource.loop = false;
+        audioSource.playOnAwake = false;
+        notesSequence = new List<int>();
     }
 
     private void Start() {
+        targetScoreLabel.color = aiColor;
+        scoreLabel.color = playerColor;
         nodes = FindObjectsOfType<Node>();
         foreach (Node node in nodes) {
-            node.Selected += PlayerPickedNode;
+            node.Selected += OnNodeSelected;
+            node.CanBeSelected = false;
             if (node.endNode) {
                 endNode = node;
                 endNode.Showed += OnEndNodeShowed;
@@ -60,11 +89,14 @@ public class GameManager : MonoBehaviour {
         leafMeshRenderer.material = Instantiate(leafMeshRenderer.material);
         leafMeshRenderer.material.SetFloat("_Fade", 0);
         Faded += StartGame;
+        scoreContainer.SetActive(false);
         FadeToGame();
     }
 
     private void OnEndNodeShowed(Node obj) {
         state = State.FirstMove;
+        scoreContainer.SetActive(true);
+        UpdateResult();
     }
 
     private void StartGame() {
@@ -75,6 +107,10 @@ public class GameManager : MonoBehaviour {
         foreach (var exitNode in playerCurrentNode.exitNodes) {
             exitNode.CanBeSelected = true;
         }
+        rootNode.SetColor(Color.yellow);
+        rootNode.nodeFilled.enabled = true;
+        endNode.SetColor(Color.gray);
+        endNode.nodeFilled.enabled = true;
     }
 
     public void FadeToGame() {
@@ -116,7 +152,8 @@ public class GameManager : MonoBehaviour {
     public void CalculateAiPath() {
         Node currentNode = rootNode;
         aiPath.Add(currentNode);
-        Node[] choices = new Node[currentNode.exitNodes.Length - 1];
+        var choices = new Node[currentNode.exitNodes.Length - 1];
+        Debug.Log($"choices found {choices.Length}");
         int i = 0;
         foreach (var exitNode in currentNode.exitNodes) {
             if (!exitNode.SelectedByPlayer) {
@@ -125,37 +162,86 @@ public class GameManager : MonoBehaviour {
             }
         }
         while (currentNode != endNode) {
-            Node chosen = choices[Random.Range(0, choices.Length)];
-            chosen.SetColor(aiColor);
-            aiPath.Add(chosen);
-            targetScore += chosen.value;
-            currentNode = chosen;
-            choices = currentNode.exitNodes;
+            if (choices.Length > 0) {
+                Node chosen = choices[Random.Range(0, choices.Length)];
+                //chosen.SetColor(aiColor);
+                aiPath.Add(chosen);
+                Debug.Log($"Adding {chosen} to AI path");
+                targetScore += chosen.value;
+                UpdateResult();
+                targetScoreLabel.text = $"{targetScore}";
+                if (currentNode != rootNode && currentNode != endNode) {
+                    currentNode.SetColor(aiColor);
+                }
+                chosen.nodeFilled.enabled = true;
+                currentNode.ColorExitLine(chosen, aiColor);
+                currentNode = chosen;
+                choices = currentNode.exitNodes;
+            }
+            //Debug.Log($"choices found {choices.Length}");
+        }
+        state = State.GamePlay;
+    }
+
+    private void PickNode(Node pickedNode) {
+        PlayRandomNote();
+        playerPath.Add(pickedNode);
+        Score += pickedNode.value;
+        UpdateResult();
+        //Score %= scoreMod;
+        pickedNode.SetColor(playerColor);
+        if (playerCurrentNode != rootNode && playerCurrentNode != endNode) {
+            playerCurrentNode.SetColor(playerColor);
+        }
+        playerCurrentNode.ColorExitLine(pickedNode, playerColor);
+        pickedNode.SelectedByPlayer = true;
+        foreach (var exitNode in playerCurrentNode.exitNodes) {
+            exitNode.CanBeSelected = false;
+        }
+        playerCurrentNode = pickedNode;
+        foreach (var exitNode in playerCurrentNode.exitNodes) {
+            exitNode.CanBeSelected = true;
+        }
+        if (playerCurrentNode == endNode) {
+            state = State.End;
         }
     }
 
-    private void PlayerPickedNode(Node pickedNode) {
+    private void PlayRandomNote() {
+        int pickedNote = 0;
+        do {
+            pickedNote = Random.Range(0, notes.Length);
+        } while (pickedNote == lastPickedNote);
+        notesSequence.Add(pickedNote);
+        audioSource.PlayOneShot(notes[pickedNote]);
+        lastPickedNote = pickedNote;
+    }
+
+    private void OnNodeSelected(Node pickedNode) {
         switch (state) {
             case State.Intro:
                 break;
             case State.FirstMove:
-                playerPath.Add(pickedNode);
-                pickedNode.SetColor(playerColor);
-                foreach (var exitNode in playerCurrentNode.exitNodes) {
-                    exitNode.CanBeSelected = false;
-                }
-                playerCurrentNode = pickedNode;
-                foreach (var exitNode in playerCurrentNode.exitNodes) {
-                    exitNode.CanBeSelected = true;
-                }
+                PickNode(pickedNode);
                 CalculateAiPath();
                 break;
             case State.GamePlay:
+                PickNode(pickedNode);
                 break;
             case State.End:
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
+    }
+
+    private void UpdateResult() {
+        int result = Mathf.Abs(5 - ((targetScore - score) % scoreMod));
+        resultLabel.text = $"{5 - result}";
+        resultImage.fillAmount = result / 5f;
+    }
+
+    public void BackToMenu() {
+        GameLoader.Instance.LoadMenuScene();
     }
 }
