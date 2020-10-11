@@ -1,7 +1,15 @@
-﻿using DG.Tweening;
+﻿using System;
+using DG.Tweening;
 using UnityEngine;
 
 public class StartButton : MonoBehaviour {
+    public AudioSource confirmAudioSource;
+    private CanvasGroup canvasGroup;
+
+    private void Awake() {
+        canvasGroup = GetComponent<CanvasGroup>();
+    }
+
     private void Start() {
         GameLoader.Instance.MenuShowed += OnMenuShowed;
         GameLoader.Instance.GameLoading += OnGameLoading;
@@ -13,14 +21,17 @@ public class StartButton : MonoBehaviour {
     }
 
     private void OnGameLoading() {
-        GetComponent<CanvasGroup>().DOFade(0, .5f);
+        canvasGroup.DOFade(0, .5f);
     }
 
     private void OnMenuShowed() {
-        GetComponent<CanvasGroup>().DOFade(1, .5f);
+        canvasGroup.DOFade(1, .5f);
     }
 
     public void ButtonClicked() {
-        GameLoader.Instance.LoadGameScene(); 
+        if (canvasGroup.alpha > 0.8f) {
+            confirmAudioSource.Play();
+            GameLoader.Instance.LoadGameScene();
+        }
     }
 }

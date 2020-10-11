@@ -17,6 +17,7 @@ public class GameLoader : MonoBehaviour {
     public event Action MenuShowed;
     public event Action MenuLoaded;
     public event Action GameLoading;
+    public event Action FadeInDone;
 
     private void Awake() {
         audioSources = GetComponents<AudioSource>();
@@ -129,10 +130,10 @@ public class GameLoader : MonoBehaviour {
             }
             else if (isLoadingMenu) {
                 if (audioSources[1].isPlaying) {
-                    audioSources[1].volume = Mathf.Lerp(gameVolume, 0, t);
+                    audioSources[1].volume = Mathf.Lerp(audioSources[1].volume, 0, t);
                 }
                 if (audioSources[2].isPlaying) {
-                    audioSources[2].volume = Mathf.Lerp(gameVolume, 0, t);
+                    audioSources[2].volume = Mathf.Lerp(audioSources[2].volume, 0, t);
                 }
                 audioSources[0].volume = Mathf.Lerp(0, menuVolume, t);
             }
@@ -140,6 +141,7 @@ public class GameLoader : MonoBehaviour {
             timer += Time.deltaTime;
             yield return null;
         }
+        FadeInDone?.Invoke();
         audioSources[0].volume = isLoadingGame ? 0 : menuVolume;
         audioSources[1].volume = isLoadingGame ? gameVolume : 0;
         audioSources[2].volume = isLoadingCredits ? creditsVolume : 0;

@@ -98,7 +98,7 @@ LightmapSettings:
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 0
+  m_UseShadowmask: 1
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -1125,17 +1125,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 1977430164}
-        m_MethodName: Play
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &1250581210
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1185,6 +1174,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b47973122ebe8c0469abe671594ef17a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  confirmAudioSource: {fileID: 1977430164}
 --- !u!225 &1250581213
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1193,7 +1183,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1250581207}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -1250,6 +1240,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c670d6438903a4aada24bc4c14acda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  confirmAudioSource: {fileID: 1977430164}
   infoBox: {fileID: 29821446}
 --- !u!225 &1290014406
 CanvasGroup:
@@ -1259,7 +1250,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1290014403}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -1308,28 +1299,6 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1290014405}
         m_MethodName: ShowInfo
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1250581207}
-        m_MethodName: SetActive
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1977430164}
-        m_MethodName: Play
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1737,6 +1706,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63b6c2ae242dc78488898532b151a292, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  confirmAudioSource: {fileID: 1977430164}
 --- !u!225 &1928352928
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1745,7 +1715,7 @@ CanvasGroup:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1928352925}
   m_Enabled: 1
-  m_Alpha: 1
+  m_Alpha: 0
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
@@ -1794,17 +1764,6 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1928352927}
         m_MethodName: ButtonClicked
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1977430164}
-        m_MethodName: Play
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
