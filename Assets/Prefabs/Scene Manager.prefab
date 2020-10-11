@@ -348,11 +348,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 730aff6cb92ce564089aa2982aec3087, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  menuBackgroundMusic: {fileID: 8300000, guid: 8bd2a12d479910c47946e59b8aee6a5b, type: 3}
+  menuBackgroundMusic: {fileID: 8300000, guid: 55e06e322a089d34e8352f46811cf786, type: 3}
   menuVolume: 0.8
   gameBackgroundMusic: {fileID: 8300000, guid: d08096aacf6e0cd48900a3a305d264a3, type: 3}
   gameVolume: 0.6
-  creditsBackgroundMusic: {fileID: 8300000, guid: 737add9bbd8d4fe458e4706e2488e6b1,
+  creditsBackgroundMusic: {fileID: 8300000, guid: 9a09d7d6f180923488c6a3ee6da81363,
     type: 3}
   creditsVolume: 0.8
   faderGroup: {fileID: 2077631968}
@@ -370,7 +370,7 @@ AudioSource:
   m_PlayOnAwake: 0
   m_Volume: 0.7
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
