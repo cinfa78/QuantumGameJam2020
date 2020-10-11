@@ -644,11 +644,10 @@ MonoBehaviour:
     practically no losses? Photons make a quantum journey, running many different
     paths at the same time, across a cells' network inside special energy factories
     called chloroplasts.\n\n<b>The physics behind Lit\r</b>\nIn Lit, your goal is
-    to make the photon moving in a superposition of two different paths inside the
+    to make the photon move in a superposition of two different paths inside the
     chloroplast towards the reaction center, where energy is used in photosynthesis.
     But beware! Whether at their journey\u2019s end the photon is absorbed, depends
-    on the difference between the two paths\u2019 lengths: this phenomenon is called
-    interference.\r"
+    on the difference between the two paths\u2019 lengths: a phenomenon called interference."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
