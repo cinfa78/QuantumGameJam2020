@@ -31,12 +31,13 @@ public class GameManager : MonoBehaviour {
     public GameObject interfaceContainer;
     public GameObject nodesContainer;
     public GameObject instructionsContainer;
+    public GameObject retryButton;
     public TMP_Text scoreLabel;
     public TMP_Text targetScoreLabel;
     public TMP_Text resultLabel;
     public Image resultImage;
     public float fadeTime = 2;
-
+    public Gradient resultImageGradient;
     public MeshRenderer leafMeshRenderer;
     public Node rootNode;
     private Node endNode;
@@ -76,6 +77,8 @@ public class GameManager : MonoBehaviour {
         audioSource.playOnAwake = false;
         notesSequence = new List<int>();
         interfaceContainer.SetActive(false);
+        retryButton.GetComponent<CanvasGroup>().alpha = 0;
+        retryButton.SetActive(false);
     }
 
     private void Start() {
@@ -142,6 +145,8 @@ public class GameManager : MonoBehaviour {
 
     private void OnEndFading() {
         nodesContainer.SetActive(true);
+        retryButton.SetActive(true);
+        retryButton.GetComponent<CanvasGroup>().DOFade(1, 1f);
     }
 
     private IEnumerator ColoringLeaf() {
@@ -268,7 +273,29 @@ public class GameManager : MonoBehaviour {
     private void UpdateResult() {
         int result = Mathf.Abs(5 - (Mathf.Abs(targetScore - score) % scoreMod));
         resultLabel.text = $"{result}";
-        resultImage.fillAmount = result / 5f;
+        StartCoroutine(UpdatingResult(result / 5f));
+    }
+
+    private IEnumerator UpdatingResult(float targetValue) {
+        float startValue = resultImage.fillAmount;
+        float endValue = targetValue;
+        float timer = 0;
+        float duration = 0.2f;
+        while (timer < duration) {
+            float t = timer / duration;
+            resultImage.fillAmount = Mathf.Lerp(startValue, endValue, t);
+            resultImage.color = resultImageGradient.Evaluate(Mathf.Lerp(startValue, endValue, t));
+            resultLabel.color = resultImage.color;
+            timer += Time.deltaTime;
+            yield return null;
+        }
+        resultImage.fillAmount = targetValue;
+        resultImage.color = resultImageGradient.Evaluate(targetValue);
+        resultLabel.color = resultImage.color;
+    }
+
+    public void Retry() {
+        GameLoader.Instance.LoadGameScene();
     }
 
     public void BackToMenu() {

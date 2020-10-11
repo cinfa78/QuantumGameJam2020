@@ -8,6 +8,8 @@ public class GameLoader : MonoBehaviour {
     [Range(0, 1f)] public float menuVolume;
     public AudioClip gameBackgroundMusic;
     [Range(0, 1f)] public float gameVolume;
+    public AudioClip creditsBackgroundMusic;
+    [Range(0, 1f)] public float creditsVolume;
     public CanvasGroup faderGroup;
     private AudioSource[] audioSources;
     public static GameLoader Instance;
@@ -22,6 +24,8 @@ public class GameLoader : MonoBehaviour {
         audioSources[0].clip = menuBackgroundMusic;
         audioSources[1].volume = 0;
         audioSources[1].clip = gameBackgroundMusic;
+        audioSources[2].volume = 0;
+        audioSources[2].clip = creditsBackgroundMusic;
         if (Instance != null) {
             Destroy(gameObject);
         }
@@ -38,8 +42,9 @@ public class GameLoader : MonoBehaviour {
         audioSources[0].Play();
         float timer = 0;
         float firstFadeDuration = 2;
+        float startFadeAlpha = faderGroup.alpha;
         while (timer < firstFadeDuration) {
-            faderGroup.alpha = Mathf.Lerp(1, 0f, timer / firstFadeDuration);
+            faderGroup.alpha = Mathf.Lerp(startFadeAlpha, 0f, timer / firstFadeDuration);
             audioSources[0].volume = Mathf.Lerp(0.5f, menuVolume, timer / firstFadeDuration);
             timer += Time.deltaTime;
             yield return null;
@@ -73,6 +78,13 @@ public class GameLoader : MonoBehaviour {
         }
     }
 
+    public void LoadCreditsScene() {
+        if (!isLoading) {
+            GameLoading?.Invoke();
+            StartCoroutine(Loading("Credits"));
+        }
+    }
+
     public void LoadMenuScene() {
         if (!isLoading)
             StartCoroutine(Loading("Menu"));
@@ -80,7 +92,9 @@ public class GameLoader : MonoBehaviour {
 
     private IEnumerator Loading(string sceneName) {
         isLoading = true;
-        bool loadingGame = sceneName == "Game";
+        bool isLoadingMenu = sceneName == "Menu";
+        bool isLoadingGame = sceneName == "Game";
+        bool isLoadingCredits = sceneName == "Credits";
         float timer = 0;
         const float fadeDuration = 1;
         while (timer < fadeDuration) {
@@ -93,29 +107,47 @@ public class GameLoader : MonoBehaviour {
         while (!asyncLoad.isDone) {
             yield return null;
         }
-        audioSources[1].Play();
+
+        if (isLoadingGame) {
+            audioSources[1].Play();
+        }
+        if (isLoadingCredits) {
+            audioSources[2].Play();
+        }
+
         timer = 0;
         const float duration = 2;
         while (timer < duration) {
             float t = timer / duration;
-            if (loadingGame) {
+            if (isLoadingGame) {
                 audioSources[0].volume = Mathf.Lerp(menuVolume, 0, t);
                 audioSources[1].volume = Mathf.Lerp(0, gameVolume, t);
             }
-            else {
-                audioSources[1].volume = Mathf.Lerp(gameVolume, 0, t);
+            else if (isLoadingCredits) {
+                audioSources[2].volume = Mathf.Lerp(creditsVolume, 0, t);
+                audioSources[0].volume = Mathf.Lerp(0, menuVolume, t);
+            }
+            else if (isLoadingMenu) {
+                if (audioSources[1].isPlaying) {
+                    audioSources[1].volume = Mathf.Lerp(gameVolume, 0, t);
+                }
+                if (audioSources[2].isPlaying) {
+                    audioSources[2].volume = Mathf.Lerp(gameVolume, 0, t);
+                }
                 audioSources[0].volume = Mathf.Lerp(0, menuVolume, t);
             }
             faderGroup.alpha = Mathf.Lerp(1, 0f, t);
             timer += Time.deltaTime;
             yield return null;
         }
-        audioSources[0].volume = loadingGame ? 0 : menuVolume;
-        audioSources[1].volume = loadingGame ? gameVolume : 0;
+        audioSources[0].volume = isLoadingGame ? 0 : menuVolume;
+        audioSources[1].volume = isLoadingGame ? gameVolume : 0;
+        audioSources[2].volume = isLoadingCredits ? creditsVolume : 0;
         audioSources[0].Stop();
         faderGroup.alpha = 0;
         isLoading = false;
-        if (!loadingGame)
+        if (!isLoadingGame && !isLoadingCredits) {
             MenuLoaded?.Invoke();
+        }
     }
 }

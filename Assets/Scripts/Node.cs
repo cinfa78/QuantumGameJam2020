@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using DG.Tweening;
 using Sirenix.OdinInspector;
 using TMPro;
 using UnityEditor;
@@ -60,7 +61,7 @@ public class Node : MonoBehaviour, IPointerClickHandler {
     private void Awake() {
         nodeOutline.material = Instantiate(nodeOutline.material);
         nodeOutline.material.color = color;
-        nodeOutline.material.SetColor("_Color", new Color(2,2,2,1));
+        nodeOutline.material.SetColor("_Color", new Color(2, 2, 2, 1));
         nodeFilled.material = Instantiate(nodeFilled.material);
         nodeFilled.enabled = false;
         nodeGlow.enabled = false;
@@ -130,7 +131,8 @@ public class Node : MonoBehaviour, IPointerClickHandler {
             float t = timer / duration;
             i = 0;
             foreach (var arc in exitArcs) {
-                arc.spriteShapeController.spline.SetPosition(1, Vector3.Lerp(Vector3.forward * 4, (arc.target.transform.position - arc.source.transform.position) + Vector3.forward, t));
+                arc.spriteShapeController.spline.SetPosition(1,
+                    Vector3.Lerp(Vector3.forward * 4, (arc.target.transform.position - arc.source.transform.position) + Vector3.forward, Mathf.Sin(t * Mathf.PI * 0.5f)));
                 i++;
             }
             timer += Time.deltaTime;
@@ -142,6 +144,10 @@ public class Node : MonoBehaviour, IPointerClickHandler {
             i++;
         }
         label.enabled = !endNode;
+        if (label.enabled) {
+            label.GetComponent<CanvasGroup>().alpha = 0;
+            label.GetComponent<CanvasGroup>().DOFade(1, 0.2f);
+        }
         Showed?.Invoke(this);
         foreach (var node in exitNodes) {
             node.ShowNode(show);
